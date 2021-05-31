@@ -3,7 +3,8 @@
     <div class="goods">
       <div class="menu-wrapper">
         <ul>
-          <li class="menu-item" v-for="(good,index) in goods" :key="index"  :class="{current: index===currentIndex}">
+          <li class="menu-item" v-for="(good,index) in goods" :key="index"
+              :class="{current: index===currentIndex}" @click="clickMenuItem(index)">
             <span class="text bottom-border-1px">
               <img class="icon" :src="good.icon" v-if="good.icon">
               {{ good.name }}
@@ -16,7 +17,8 @@
           <li class="food-list-hook" v-for="(good,index) in goods" :key="index">
             <h1 class="title">{{ good.name }}</h1>
             <ul>
-              <li class="food-item bottom-border-1px" v-for="(food, index) in good.foods" :key="index">
+              <li class="food-item bottom-border-1px" v-for="(food, index) in good.foods"
+                  :key="index" @click="showFood(food)">
                 <div class="icon">
                   <img width="57" height="57" :src="food.icon">
                 </div>
@@ -32,7 +34,7 @@
                     <span class="old" v-if="food.oldPrice">￥{{ food.oldPrice }}</span>
                   </div>
                   <div class="cartcontrol-wrapper">
-                    CartControl组件
+                    <CartControl :food="food" />
                   </div>
                 </div>
               </li>
@@ -40,13 +42,18 @@
           </li>
         </ul>
       </div>
+      <ShopCart/>
     </div>
+    <Food :food="food" ref="food"/>
   </div>
 </template>
 
 <script>
 import {mapState} from 'vuex'
 import BScroll from 'better-scroll'
+import CartControl from '../../../components/CartControl/CartControl'
+import Food from '../../../components/Food/Food'
+import ShopCart from '../../../components/ShopCart/ShopCart'
 
 export default {
 
@@ -54,6 +61,7 @@ export default {
     return{
       scrollY:0,
       tops:[],
+      food:{}, ///需要显式的food
     }
   },
 
@@ -85,16 +93,21 @@ export default {
   },
 
   methods:{
+
+    //初始化滚动条
     _initScroll(){
       //1.在列表更新显示之后创建滚动条
-      new BScroll('.menu-wrapper')
-      const foodsScroll = new BScroll('.foods-wrapper',{
-        probeType: 3
+      new BScroll('.menu-wrapper',{
+        click: true
+      })
+      this.foodsScroll = new BScroll('.foods-wrapper',{
+        probeType: 3,
+        click: true
       })
       //2.添加滚动监听
-      foodsScroll.on('scroll', ({x,y})=>{
+      this.foodsScroll.on('scroll', ({x,y})=>{
         this.scrollY = Math.abs(y)
-        console.log(this.currentIndex)
+        // console.log(this.currentIndex)
       })
     },
 
@@ -108,7 +121,27 @@ export default {
         tops.push(item.offsetTop)
       })
       this.tops = tops
+    },
+
+    //点击左侧菜单改变右侧
+    clickMenuItem(index){
+      const scrollY = this.tops[index]
+      this.foodsScroll.scrollTo(0,-scrollY,150)
+    },
+
+    //显式点击的food
+    showFood(food){
+      // 设置food
+      this.food = food
+      //显式food组件  (调用子组件的方法来改变子组件的显式隐藏)
+      this.$refs.food.toggleShow()
     }
+  },
+
+  components:{
+    CartControl,
+    Food,
+    ShopCart,
   }
 }
 </script>

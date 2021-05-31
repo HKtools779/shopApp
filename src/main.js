@@ -8,6 +8,7 @@ import App from './App'
 import router from './router'
 import store from './store'
 import './mock/mockServer'   //加载mockServer即可
+import './filters'   //加载过滤器
 
 //注册全局组件标签
 Vue.component(Button.name,Button)  //组件<mt-Button>
